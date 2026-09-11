@@ -4,7 +4,28 @@
     "href": "about.html",
     "title": "About",
     "section": "",
-    "text": "About this site"
+    "text": "I am from China and completed my undergraduate degree in Economics at the University of British Columbia. Studying economics taught me how to think critically about real-world questions and understand the relationships between data, decisions, and human behaviour. During my undergraduate studies, I became increasingly interested in using quantitative methods to explore these questions."
+  },
+  {
+    "objectID": "about.html#background",
+    "href": "about.html#background",
+    "title": "About",
+    "section": "",
+    "text": "I am from China and completed my undergraduate degree in Economics at the University of British Columbia. Studying economics taught me how to think critically about real-world questions and understand the relationships between data, decisions, and human behaviour. During my undergraduate studies, I became increasingly interested in using quantitative methods to explore these questions."
+  },
+  {
+    "objectID": "about.html#why-data-science",
+    "href": "about.html#why-data-science",
+    "title": "About",
+    "section": "Why Data Science",
+    "text": "Why Data Science\nI chose to pursue a Master of Data Science because I wanted to develop the technical skills needed to turn data into meaningful insights. I am especially interested in learning how statistical methods and computational tools can be applied to practical problems. Through the MDS program, I hope to become a more effective problem solver and gain experience working on real-world data projects."
+  },
+  {
+    "objectID": "about.html#outside-of-data-science",
+    "href": "about.html#outside-of-data-science",
+    "title": "About",
+    "section": "Outside of Data Science",
+    "text": "Outside of Data Science\nOutside of my studies, I enjoy cycling, photography, and playing badminton. Cycling gives me an opportunity to explore new places, while photography allows me to capture interesting moments and perspectives. I also enjoy playing badminton as a way to stay active and spend time with friends."
   },
   {
     "objectID": "index.html",
