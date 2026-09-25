@@ -4,7 +4,7 @@
     "href": "blog.html",
     "title": "Blog",
     "section": "",
-    "text": "My first weeks in MDS\n\n\n\n\n\n\n\n\nSep 11, 2026\n\n\nQibing He\n\n\n\n\n\nNo matching items"
+    "text": "Distribution of Parks Across Vancouver\n\n\n\n\n\n\n\n\nSep 25, 2026\n\n\nQibing He\n\n\n\n\n\n\n\n\n\n\n\n\nMy first weeks in MDS\n\n\n\n\n\n\n\n\nSep 11, 2026\n\n\nQibing He\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "index.html",
@@ -47,5 +47,54 @@
     "title": "About",
     "section": "Outside of Data Science",
     "text": "Outside of Data Science\nOutside of my studies, I enjoy cycling, photography, and playing badminton. Cycling gives me an opportunity to explore new places, while photography allows me to capture interesting moments and perspectives. I also enjoy playing badminton as a way to stay active and spend time with friends."
+  },
+  {
+    "objectID": "posts/vancouver-parks-python/index.html",
+    "href": "posts/vancouver-parks-python/index.html",
+    "title": "Distribution of Parks Across Vancouver",
+    "section": "",
+    "text": "This post examines how public parks are distributed across Vancouver’s neighbourhoods. I will use Python to inspect the data, summarize the number of parks in each neighbourhood, and visualize the results.\nData: Parks, City of Vancouver Open Data Portal. The dataset is provided under the Open Government Licence – Vancouver."
+  },
+  {
+    "objectID": "posts/vancouver-parks-python/index.html#setup",
+    "href": "posts/vancouver-parks-python/index.html#setup",
+    "title": "Distribution of Parks Across Vancouver",
+    "section": "Setup",
+    "text": "Setup\nThe following chunk loads the Python packages used in this analysis and shows the Python executable used by Quarto.\n\nimport sys\nimport pandas as pd\nimport altair as alt\n\nprint(sys.executable)\n\n/Users/alex/Desktop/MDS/DSCI521/mds521/alexhe03.github.io/.venv/bin/python3"
+  },
+  {
+    "objectID": "posts/vancouver-parks-python/index.html#load-and-inspect-the-data",
+    "href": "posts/vancouver-parks-python/index.html#load-and-inspect-the-data",
+    "title": "Distribution of Parks Across Vancouver",
+    "section": "Load and inspect the data",
+    "text": "Load and inspect the data\nFirst, I load the parks dataset and inspect its dimensions and selected columns.\n\nparks = pd.read_csv(\"../../data/parks.csv\", sep=\";\")\n\nprint(\n    f\"The dataset contains {parks.shape[0]} parks \"\n    f\"and {parks.shape[1]} columns.\"\n)\n\nparks[[\"Name\", \"NeighbourhoodName\", \"Hectare\"]].head()\n\nThe dataset contains 218 parks and 15 columns.\n\n\n\n\n\n\n\n\n\nName\nNeighbourhoodName\nHectare\n\n\n\n\n0\nArbutus Village Park\nArbutus-Ridge\n1.41\n\n\n1\nTrafalgar Park\nArbutus-Ridge\n4.85\n\n\n2\nCoopers' Park\nDowntown\n1.71\n\n\n3\nDevonian Harbour Park\nDowntown\n4.42\n\n\n4\nEmery Barnes Park\nDowntown\n0.85"
+  },
+  {
+    "objectID": "posts/vancouver-parks-python/index.html#check-and-clean-the-data",
+    "href": "posts/vancouver-parks-python/index.html#check-and-clean-the-data",
+    "title": "Distribution of Parks Across Vancouver",
+    "section": "Check and clean the data",
+    "text": "Check and clean the data\nBefore counting parks by neighbourhood, I check the variables used in the analysis for missing values. Records without a neighbourhood or park area are excluded from the cleaned dataset.\n\nanalysis_columns = [\"Name\", \"NeighbourhoodName\", \"Hectare\"]\n\nmissing_summary = (\n    parks[analysis_columns]\n    .isna()\n    .sum()\n    .rename(\"missing_values\")\n    .to_frame()\n)\n\nmissing_summary\n\n\n\n\n\n\n\n\nmissing_values\n\n\n\n\nName\n0\n\n\nNeighbourhoodName\n0\n\n\nHectare\n0\n\n\n\n\n\n\n\n\nparks_clean = parks.dropna(\n    subset=[\"NeighbourhoodName\", \"Hectare\"]\n).copy()\n\nparks_clean[\"Hectare\"] = pd.to_numeric(\n    parks_clean[\"Hectare\"],\n    errors=\"coerce\"\n)\n\nparks_clean = parks_clean.dropna(subset=[\"Hectare\"])\n\nprint(f\"{len(parks_clean)} parks remain after cleaning.\")\n\n218 parks remain after cleaning."
+  },
+  {
+    "objectID": "posts/vancouver-parks-python/index.html#parks-by-neighbourhood",
+    "href": "posts/vancouver-parks-python/index.html#parks-by-neighbourhood",
+    "title": "Distribution of Parks Across Vancouver",
+    "section": "Parks by neighbourhood",
+    "text": "Parks by neighbourhood\nI group the cleaned data by neighbourhood and count the number of parks in each area. The table below shows the ten neighbourhoods with the most parks.\n\npark_counts = (\n    parks_clean\n    .groupby(\"NeighbourhoodName\")\n    .size()\n    .reset_index(name=\"park_count\")\n    .sort_values(\"park_count\", ascending=False)\n)\n\npark_counts.head(10)\n\n\n\n\n\n\n\n\nNeighbourhoodName\npark_count\n\n\n\n\n1\nDowntown\n23\n\n\n9\nKitsilano\n16\n\n\n5\nHastings-Sunrise\n16\n\n\n13\nRenfrew-Collingwood\n15\n\n\n4\nGrandview-Woodland\n14\n\n\n11\nMount Pleasant\n13\n\n\n6\nKensington-Cedar Cottage\n11\n\n\n10\nMarpole\n11\n\n\n0\nArbutus-Ridge\n10\n\n\n8\nKillarney\n9"
+  },
+  {
+    "objectID": "posts/vancouver-parks-python/index.html#visualize-the-distribution",
+    "href": "posts/vancouver-parks-python/index.html#visualize-the-distribution",
+    "title": "Distribution of Parks Across Vancouver",
+    "section": "Visualize the distribution",
+    "text": "Visualize the distribution\nThe following bar chart compares the number of public parks across Vancouver’s neighbourhoods.\n\npark_chart = (\n    alt.Chart(park_counts)\n    .mark_bar(color=\"#2a9d8f\")\n    .encode(\n        x=alt.X(\n            \"park_count:Q\",\n            title=\"Number of parks\"\n        ),\n        y=alt.Y(\n            \"NeighbourhoodName:N\",\n            sort=\"-x\",\n            title=\"Neighbourhood\"\n        ),\n        tooltip=[\n            alt.Tooltip(\n                \"NeighbourhoodName:N\",\n                title=\"Neighbourhood\"\n            ),\n            alt.Tooltip(\n                \"park_count:Q\",\n                title=\"Number of parks\"\n            )\n        ]\n    )\n    .properties(\n        width=650,\n        height=500\n    )\n)\n\npark_chart\n\n\n\n\n\n\n\n\n\nFigure 1: Number of public parks in each Vancouver neighbourhood."
+  },
+  {
+    "objectID": "posts/vancouver-parks-python/index.html#findings",
+    "href": "posts/vancouver-parks-python/index.html#findings",
+    "title": "Distribution of Parks Across Vancouver",
+    "section": "Findings",
+    "text": "Findings\nThe dataset contains 218 parks across 22 Vancouver neighbourhoods, and there are no missing values in the three variables used for this analysis. Downtown has the largest number of parks, with 23. Kitsilano and Hastings-Sunrise follow with 16 parks each. The results show that the number of parks is not evenly distributed across neighbourhoods, although this analysis counts parks and does not account for differences in park size."
   }
 ]

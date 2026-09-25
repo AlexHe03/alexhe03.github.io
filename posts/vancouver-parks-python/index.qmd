@@ -1,0 +1,141 @@
+---
+title: "Distribution of Parks Across Vancouver"
+author: "Qibing He"
+date: 2026-09-25
+---
+
+This post examines how public parks are distributed across Vancouver's neighbourhoods. I will use Python to inspect the data, summarize the number of parks in each neighbourhood, and visualize the results.
+
+Data: [Parks](https://opendata.vancouver.ca/explore/dataset/parks/), City of Vancouver Open Data Portal. The dataset is provided under the Open Government Licence – Vancouver.
+
+## Setup
+
+The following chunk loads the Python packages used in this analysis and shows the Python executable used by Quarto.
+
+```{python}
+#| label: setup
+#| warning: false
+
+import sys
+import pandas as pd
+import altair as alt
+
+print(sys.executable)
+```
+
+## Load and inspect the data
+
+First, I load the parks dataset and inspect its dimensions and selected columns.
+
+```{python}
+#| label: load-parks
+
+parks = pd.read_csv("../../data/parks.csv", sep=";")
+
+print(
+    f"The dataset contains {parks.shape[0]} parks "
+    f"and {parks.shape[1]} columns."
+)
+
+parks[["Name", "NeighbourhoodName", "Hectare"]].head()
+```
+
+## Check and clean the data
+
+Before counting parks by neighbourhood, I check the variables used in the analysis for missing values. Records without a neighbourhood or park area are excluded from the cleaned dataset.
+
+```{python}
+#| label: clean-parks
+
+analysis_columns = ["Name", "NeighbourhoodName", "Hectare"]
+
+missing_summary = (
+    parks[analysis_columns]
+    .isna()
+    .sum()
+    .rename("missing_values")
+    .to_frame()
+)
+
+missing_summary
+```
+
+```{python}
+#| label: prepare-parks
+
+parks_clean = parks.dropna(
+    subset=["NeighbourhoodName", "Hectare"]
+).copy()
+
+parks_clean["Hectare"] = pd.to_numeric(
+    parks_clean["Hectare"],
+    errors="coerce"
+)
+
+parks_clean = parks_clean.dropna(subset=["Hectare"])
+
+print(f"{len(parks_clean)} parks remain after cleaning.")
+```
+
+## Parks by neighbourhood
+
+I group the cleaned data by neighbourhood and count the number of parks in each area. The table below shows the ten neighbourhoods with the most parks.
+
+```{python}
+#| label: summarize-parks
+
+park_counts = (
+    parks_clean
+    .groupby("NeighbourhoodName")
+    .size()
+    .reset_index(name="park_count")
+    .sort_values("park_count", ascending=False)
+)
+
+park_counts.head(10)
+```
+
+## Visualize the distribution
+
+The following bar chart compares the number of public parks across Vancouver's neighbourhoods.
+
+```{python}
+#| label: fig-parks-by-neighbourhood
+#| fig-cap: "Number of public parks in each Vancouver neighbourhood."
+
+park_chart = (
+    alt.Chart(park_counts)
+    .mark_bar(color="#2a9d8f")
+    .encode(
+        x=alt.X(
+            "park_count:Q",
+            title="Number of parks"
+        ),
+        y=alt.Y(
+            "NeighbourhoodName:N",
+            sort="-x",
+            title="Neighbourhood"
+        ),
+        tooltip=[
+            alt.Tooltip(
+                "NeighbourhoodName:N",
+                title="Neighbourhood"
+            ),
+            alt.Tooltip(
+                "park_count:Q",
+                title="Number of parks"
+            )
+        ]
+    )
+    .properties(
+        width=650,
+        height=500
+    )
+)
+
+park_chart
+```
+
+## Findings
+
+The dataset contains 218 parks across 22 Vancouver neighbourhoods, and there are no missing values in the three variables used for this analysis. Downtown has the largest number of parks, with 23. Kitsilano and Hastings-Sunrise follow with 16 parks each. The results show that the number of parks is not evenly distributed across neighbourhoods, although this analysis counts parks and does not account for differences in park size.
