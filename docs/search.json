@@ -4,7 +4,7 @@
     "href": "blog.html",
     "title": "Blog",
     "section": "",
-    "text": "Distribution of Parks Across Vancouver\n\n\n\n\n\n\n\n\nSep 25, 2026\n\n\nQibing He\n\n\n\n\n\n\n\n\n\n\n\n\nMy first weeks in MDS\n\n\n\n\n\n\n\n\nSep 11, 2026\n\n\nQibing He\n\n\n\n\n\nNo matching items"
+    "text": "Distribution of Parks Across Vancouver\n\n\n\n\n\n\n\n\nSep 25, 2026\n\n\nQibing He\n\n\n\n\n\n\n\n\n\n\n\n\nPark Sizes in Vancouver\n\n\n\n\n\n\n\n\nSep 25, 2026\n\n\nQibing He\n\n\n\n\n\n\n\n\n\n\n\n\nMy first weeks in MDS\n\n\n\n\n\n\n\n\nSep 11, 2026\n\n\nQibing He\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "index.html",
@@ -96,5 +96,61 @@
     "title": "Distribution of Parks Across Vancouver",
     "section": "Findings",
     "text": "Findings\nThe dataset contains 218 parks across 22 Vancouver neighbourhoods, and there are no missing values in the three variables used for this analysis. Downtown has the largest number of parks, with 23. Kitsilano and Hastings-Sunrise follow with 16 parks each. The results show that the number of parks is not evenly distributed across neighbourhoods, although this analysis counts parks and does not account for differences in park size."
+  },
+  {
+    "objectID": "posts/vancouver-parks-r/index.html",
+    "href": "posts/vancouver-parks-r/index.html",
+    "title": "Park Sizes in Vancouver",
+    "section": "",
+    "text": "This post examines the distribution of public park sizes in Vancouver. I will use R to inspect park areas, calculate summary statistics, identify the largest parks, and visualize the distribution of park sizes.\nData: Parks, City of Vancouver Open Data Portal. The dataset is provided under the Open Government Licence – Vancouver."
+  },
+  {
+    "objectID": "posts/vancouver-parks-r/index.html#setup",
+    "href": "posts/vancouver-parks-r/index.html#setup",
+    "title": "Park Sizes in Vancouver",
+    "section": "Setup",
+    "text": "Setup\nThe following chunk loads the R package used for visualization.\n\nlibrary(ggplot2)"
+  },
+  {
+    "objectID": "posts/vancouver-parks-r/index.html#load-and-inspect-the-data",
+    "href": "posts/vancouver-parks-r/index.html#load-and-inspect-the-data",
+    "title": "Park Sizes in Vancouver",
+    "section": "Load and inspect the data",
+    "text": "Load and inspect the data\nFirst, I load the parks dataset and inspect its dimensions and selected columns.\n\nparks &lt;- read.csv(\n  \"../../data/parks.csv\",\n  sep = \";\",\n  stringsAsFactors = FALSE\n)\n\ncat(\n  \"The dataset contains\",\n  nrow(parks),\n  \"parks and\",\n  ncol(parks),\n  \"columns.\\n\"\n)\n\nThe dataset contains 218 parks and 15 columns.\n\nhead(parks[c(\"Name\", \"NeighbourhoodName\", \"Hectare\")])\n\n                   Name NeighbourhoodName Hectare\n1  Arbutus Village Park     Arbutus-Ridge    1.41\n2        Trafalgar Park     Arbutus-Ridge    4.85\n3         Coopers' Park          Downtown    1.71\n4 Devonian Harbour Park          Downtown    4.42\n5     Emery Barnes Park          Downtown    0.85\n6      Wendy Poole Park          Downtown    0.04"
+  },
+  {
+    "objectID": "posts/vancouver-parks-r/index.html#check-and-clean-the-data",
+    "href": "posts/vancouver-parks-r/index.html#check-and-clean-the-data",
+    "title": "Park Sizes in Vancouver",
+    "section": "Check and clean the data",
+    "text": "Check and clean the data\nI check the variables used in the analysis for missing values before calculating park-size statistics.\n\nanalysis_columns &lt;- c(\n  \"Name\",\n  \"NeighbourhoodName\",\n  \"Hectare\"\n)\n\ncolSums(is.na(parks[analysis_columns]))\n\n             Name NeighbourhoodName           Hectare \n                0                 0                 0 \n\n\n\nparks_clean &lt;- parks[\n  complete.cases(parks[analysis_columns]),\n]\n\nparks_clean$Hectare &lt;- as.numeric(\n  parks_clean$Hectare\n)\n\nparks_clean &lt;- parks_clean[\n  !is.na(parks_clean$Hectare),\n]\n\ncat(\n  nrow(parks_clean),\n  \"parks remain after cleaning.\\n\"\n)\n\n218 parks remain after cleaning."
+  },
+  {
+    "objectID": "posts/vancouver-parks-r/index.html#summary-of-park-sizes",
+    "href": "posts/vancouver-parks-r/index.html#summary-of-park-sizes",
+    "title": "Park Sizes in Vancouver",
+    "section": "Summary of park sizes",
+    "text": "Summary of park sizes\nI calculate several summary statistics to understand the typical park size and the overall range of park areas.\n\nsize_summary &lt;- data.frame(\n  Statistic = c(\n    \"Mean\",\n    \"Median\",\n    \"Minimum\",\n    \"Maximum\"\n  ),\n  Hectares = round(\n    c(\n      mean(parks_clean$Hectare),\n      median(parks_clean$Hectare),\n      min(parks_clean$Hectare),\n      max(parks_clean$Hectare)\n    ),\n    2\n  )\n)\n\nsize_summary\n\n  Statistic Hectares\n1      Mean      6.2\n2    Median      1.4\n3   Minimum      0.0\n4   Maximum    400.0"
+  },
+  {
+    "objectID": "posts/vancouver-parks-r/index.html#largest-parks",
+    "href": "posts/vancouver-parks-r/index.html#largest-parks",
+    "title": "Park Sizes in Vancouver",
+    "section": "Largest parks",
+    "text": "Largest parks\nThe following table identifies the ten largest parks in the dataset.\n\nlargest_parks &lt;- parks_clean[\n  order(\n    parks_clean$Hectare,\n    decreasing = TRUE\n  ),\n  c(\n    \"Name\",\n    \"NeighbourhoodName\",\n    \"Hectare\"\n  )\n]\n\nhead(largest_parks, 10)\n\n                             Name        NeighbourhoodName Hectare\n207                  Stanley Park                 West End  400.00\n113        Fraserview Golf Course                Killarney   84.34\n103                 Hastings Park         Hastings-Sunrise   62.00\n55           Queen Elizabeth Park               Riley Park   52.98\n29           McCleery Golf Course               Kerrisdale   48.57\n123           Langara Golf Course             South Cambie   48.57\n210            Jericho Beach Park          West Point Grey   46.71\n30           Everett Crowley Park                Killarney   38.08\n107 John Hendry (Trout Lake) Park Kensington-Cedar Cottage   27.31\n58      VanDusen Botanical Garden              Shaughnessy   22.29"
+  },
+  {
+    "objectID": "posts/vancouver-parks-r/index.html#visualize-the-largest-parks",
+    "href": "posts/vancouver-parks-r/index.html#visualize-the-largest-parks",
+    "title": "Park Sizes in Vancouver",
+    "section": "Visualize the largest parks",
+    "text": "Visualize the largest parks\nThe following chart compares the areas of the ten largest parks in the dataset.\n\ntop_ten_parks &lt;- head(largest_parks, 10)\n\nggplot(\n  top_ten_parks,\n  aes(\n    x = reorder(Name, Hectare),\n    y = Hectare\n  )\n) +\n  geom_col(fill = \"#457b9d\") +\n  coord_flip() +\n  labs(\n    x = \"Park\",\n    y = \"Area (hectares)\"\n  ) +\n  theme_minimal()\n\n\n\n\n\n\n\nFigure 1: The ten largest public parks in Vancouver by area."
+  },
+  {
+    "objectID": "posts/vancouver-parks-r/index.html#findings",
+    "href": "posts/vancouver-parks-r/index.html#findings",
+    "title": "Park Sizes in Vancouver",
+    "section": "Findings",
+    "text": "Findings\nThe 218 parks in the dataset have a mean area of 6.2 hectares but a median area of only 1.4 hectares. This large difference indicates that the distribution of park sizes is strongly right-skewed: most parks are relatively small, while a few very large parks increase the mean. Stanley Park is the largest at 400 hectares, considerably larger than Fraserview Golf Course, the second-largest site at 84.34 hectares."
   }
 ]

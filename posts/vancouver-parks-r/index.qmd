@@ -1,0 +1,162 @@
+---
+title: "Park Sizes in Vancouver"
+author: "Qibing He"
+date: 2026-09-25
+---
+
+This post examines the distribution of public park sizes in Vancouver. I will use R to inspect park areas, calculate summary statistics, identify the largest parks, and visualize the distribution of park sizes.
+
+Data: [Parks](https://opendata.vancouver.ca/explore/dataset/parks/), City of Vancouver Open Data Portal. The dataset is provided under the Open Government Licence – Vancouver.
+
+## Setup
+
+The following chunk loads the R package used for visualization.
+
+```{r}
+#| label: setup-r
+#| message: false
+#| warning: false
+
+library(ggplot2)
+```
+
+## Load and inspect the data
+
+First, I load the parks dataset and inspect its dimensions and selected columns.
+
+```{r}
+#| label: load-parks-r
+
+parks <- read.csv(
+  "../../data/parks.csv",
+  sep = ";",
+  stringsAsFactors = FALSE
+)
+
+cat(
+  "The dataset contains",
+  nrow(parks),
+  "parks and",
+  ncol(parks),
+  "columns.\n"
+)
+
+head(parks[c("Name", "NeighbourhoodName", "Hectare")])
+```
+
+## Check and clean the data
+
+I check the variables used in the analysis for missing values before calculating park-size statistics.
+
+```{r}
+#| label: check-missing-r
+
+analysis_columns <- c(
+  "Name",
+  "NeighbourhoodName",
+  "Hectare"
+)
+
+colSums(is.na(parks[analysis_columns]))
+```
+
+```{r}
+#| label: prepare-parks-r
+
+parks_clean <- parks[
+  complete.cases(parks[analysis_columns]),
+]
+
+parks_clean$Hectare <- as.numeric(
+  parks_clean$Hectare
+)
+
+parks_clean <- parks_clean[
+  !is.na(parks_clean$Hectare),
+]
+
+cat(
+  nrow(parks_clean),
+  "parks remain after cleaning.\n"
+)
+```
+
+## Summary of park sizes
+
+I calculate several summary statistics to understand the typical park size and the overall range of park areas.
+
+```{r}
+#| label: summarize-park-sizes
+
+size_summary <- data.frame(
+  Statistic = c(
+    "Mean",
+    "Median",
+    "Minimum",
+    "Maximum"
+  ),
+  Hectares = round(
+    c(
+      mean(parks_clean$Hectare),
+      median(parks_clean$Hectare),
+      min(parks_clean$Hectare),
+      max(parks_clean$Hectare)
+    ),
+    2
+  )
+)
+
+size_summary
+```
+
+## Largest parks
+
+The following table identifies the ten largest parks in the dataset.
+
+```{r}
+#| label: largest-parks
+
+largest_parks <- parks_clean[
+  order(
+    parks_clean$Hectare,
+    decreasing = TRUE
+  ),
+  c(
+    "Name",
+    "NeighbourhoodName",
+    "Hectare"
+  )
+]
+
+head(largest_parks, 10)
+```
+
+## Visualize the largest parks
+
+The following chart compares the areas of the ten largest parks in the dataset.
+
+```{r}
+#| label: fig-largest-vancouver-parks
+#| fig-cap: "The ten largest public parks in Vancouver by area."
+
+top_ten_parks <- head(largest_parks, 10)
+
+ggplot(
+  top_ten_parks,
+  aes(
+    x = reorder(Name, Hectare),
+    y = Hectare
+  )
+) +
+  geom_col(fill = "#457b9d") +
+  coord_flip() +
+  labs(
+    x = "Park",
+    y = "Area (hectares)"
+  ) +
+  theme_minimal()
+```
+
+## Findings
+
+The 218 parks in the dataset have a mean area of 6.2 hectares but a median area of only 1.4 hectares. This large difference indicates that the distribution of park sizes is strongly right-skewed: most parks are relatively small, while a few very large parks increase the mean. Stanley Park is the largest at 400 hectares, considerably larger than Fraserview Golf Course, the second-largest site at 84.34 hectares.
